@@ -1,0 +1,78 @@
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <string>
+#include <algorithm>
+#include <filesystem>
+
+using namespace std;
+
+unsigned long long factorial(int num) {
+    unsigned long long result = 1;
+    for (int i = 2; i <= num; ++i) {
+        result *= i;
+    }
+    return result;
+}
+
+unsigned long long binomial_coefficient(int n, int r) {
+    if (r > n) return 0;
+    return factorial(n) / (factorial(r) * factorial(n - r));
+}
+
+void generate_combinations(int n, int r, vector<vector<int>>& result) {
+    vector<bool> v(n);
+    fill(v.begin(), v.begin() + r, true);
+    do {
+        vector<int> combination;
+        for (int i = 0; i < n; ++i) {
+            if (v[i]) combination.push_back(i + 1);
+        }
+        result.push_back(combination);
+    } while (prev_permutation(v.begin(), v.end()));
+}
+
+bool is_valid_input(int n, int r) {
+    return n >= 1 && r >= 0 && r <= n;
+}
+
+int main()
+{
+    int n, r;
+
+    while (true) {
+        cout << "Ingrese el valor de n (>= 1): ";
+        cin >> n;
+        cout << "Ingrese el valor de r (>= 0 y <= n): ";
+        cin >> r;
+
+        if (is_valid_input(n, r)) break;
+        else cout << "Este dato no es valido\n";
+    }
+
+    vector<vector<int>> combinaciones;
+    generate_combinations(n, r, combinaciones);
+
+    string filename = "combinaciones_n" + to_string(n) + "_r" + to_string(r) + ".csv";
+    string filepath = filesystem::current_path().string() + "/" + filename;
+
+    ofstream file(filename);
+    for (const auto& comb : combinaciones) {
+        for (size_t i = 0; i < comb.size(); ++i) {
+            file << comb[i];
+            if (i < comb.size() - 1) file << ",";
+        }
+        file << "\n";
+    }
+    file.close();
+
+    unsigned long long teorico = binomial_coefficient(n, r);
+
+    cout << "\nNúmero total de combinaciones generadas: " << combinaciones.size() << endl;
+    cout << "Número teórico de combinaciones C(" << n << ", " << r << "): " << teorico << endl;
+    cout << "Los conteos " << (combinaciones.size() == teorico ? "coinciden." : "NO coinciden.") << endl;
+    cout << "Archivo CSV guardado en: " << filepath << endl;
+
+    return 0;
+    system ("pause");
+}
